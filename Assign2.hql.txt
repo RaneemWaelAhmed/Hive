@@ -1,0 +1,56 @@
+
+create database assign2;
+create external table assign2.songs_assign2(artist_id string,artist_latitude double,artist_location string,artist_longitude double,artist_name string,duration double,num_songs int,id int,title string,year int)
+partitioned by (yearr int,artistname string)
+row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'; 
+ 
+!hdfs dfs -mkdir /Raneem/songspartition ;
+!hdfs dfs -put /employee/songs.csv /Raneem/songspartition ;
+
+ 
+!hdfs dfs -mkdir /Raneem/partition1 ;
+alter table assign2.songs_assign2 add partition(yearr = 2007,artistname = 'Raneem') location '/Raneem/partition1';
+ 
+!hdfs dfs -put /employee/songs.csv /Raneem/partition1 ;
+show partitions assign2.songs_assign2;
+ 
+create table assign2.staging(artist_id string,artist_latitude double,artist_location string,artist_longitude double,artist_name string,duration double,num_songs int,id int,title string,year int)
+row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde';
+ 
+load data local inpath '/employee/songs.csv' into table assign2.staging;
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+from assign2.staging insert overwrite table assign2.songs_assign2 partition(yearr=2008,artistname='Mark')select * where year=2008 and artist_name='Marc Shaiman';
+
+truncate table assign2.songs_assign2;
+select * from assign2.songs_assign2;
+ 
+Truncate table songs;
+
+from assign2.staging
+insert into table assign2.songs_assign2 partition(yearr=2008,artistname='Jinx') select* where year=2008 and artist_name='Jinx'
+insert into table assign2.songs_assign2 partition(yearr=2009,artistname='Wilks') select* where year=2009 and artist_name='Wilks';
+ 
+ 
+truncate table assign2.songs_assign2;
+
+CREATE TABLE  like_staging LIKE assign2.staging
+stored as avro;
+
+CREATE TABLE  like_staging_parquet LIKE assign2.staging
+    stored as Parquet;
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,24 @@
+select userid,firstname,lastname,sessionid,first_song,last_song 
+from(
+ select userid,firstname,lastname,sessionid,first_Value(song)over(partition by sessionid order by sessionid)
+ as first_song
+ ,last_Value(song)over(partition by sessionid order by sessionid
+ rows between unbounded preceding and unbounded following) as last_song
+ from events) group by sessionid;
+ 
+ 
+select count(distinct(song)),rank over(order by count(distinct(song)) desc)from events group by userid;
+select count(song) from events group by location;
+ 
+ select userid,firstname,lastname,sessionid,first_Value(song)over(partition by sessionid order by sessionid)
+ as first_song
+ ,last_Value(song)over(partition by sessionid order by sessionid
+ rows between unbounded preceding and unbounded following) as last_song
+ from events;
+ 
+ CREATE TABLE  like_staging LIKE assign2.staging
+    USING PARQUET
+    row format
+    [ STORED AS file_format ]
+    [ TBLPROPERTIES ( key1=val1, key2=val2, ... ) ]
+    [ LOCATION path ]

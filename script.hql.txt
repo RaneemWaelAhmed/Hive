@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS songs;
+create table songs(artist_id string,artist_latitude double,artist_location string,artist_longitude double,artist_name string,duration double,num_songs int,id int,title string,year int)
+row format delimited
+fields terminated by ',';
+load data local inpath '/employee/songs.csv' into table songs;

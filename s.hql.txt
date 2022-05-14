@@ -1,0 +1,23 @@
+
+select x.userId,x.firstname,x.lastname,x.first_song,x.last_song from(
+select distinct(sessionid),first_Value(song)over(partition by sessionid order by sessionid)
+as first_song,last_Value(song)over(partition by sessionid order by sessionid rows between unbounded preceding and unbounded following) as last_song
+from events
+group by sessionid 
+limit 20) x
+group by x.sessionid ;
+
+staging.artist_id,staging.artist_latitude,staging.artist_longitude,staging.artist_name,staging.duration,staging.num_songs,staging.song_id,staging.title
+from assign2.staging
+insert overwrite table assign2.songs_assign2 partition(yearr='2008',artistname='Marc Shaiman')
+select staging.artist_id,staging.artist_latitude,staging.artist_longitude,staging.artist_name,staging.duration,staging.num_songs,staging.title
+from assign2.staging
+where year='2008' and artist_name='Marc Shaiman';
+ALTER TABLE songs ADD PARTITION (year='2008',artist_location='Marc Shaiman'); 
+
+
+create external table assign2.songs_assign2(artist_id string,artist_latitude double,artist_location string,artist_longitude double,artist_name string,duration double,num_songs int,id int,title string,year int)
+partitioned by (yearr int,artistname string)
+ row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'; 
+
+ALTER TABLE assign2.songs_assign2 SET TBLPROPERTIES('EXTERNAL'='FALSE')

@@ -1,0 +1,26 @@
+create table events(artist string,auth string,firstName string,gender string,itemInSession int,lastName string,length double,level string,location string,method string,page string,registration double,sessionId int,song string,status int,ts int,userAgent string,userId int)
+row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde';
+
+load data local inpath '/employee/events.csv' into table events;
+
+select userid,firstname,lastname,sessionid,first_Value(song)over(partition by sessionid order by sessionid)
+ as first_song
+ ,last_Value(song)over(partition by sessionid order by sessionid
+ rows between unbounded preceding and unbounded following) as last_song
+ from events;
+
+Select x.userid,rank () over(order by x.c desc) as rank from(
+select userid,count(distinct(song)) as c  from events group by userid) x
+order by rank desc ;
+
+Select x.userid,row_number () over(order by x.c desc) as rank from(
+select userid,count(distinct(song)) as c  from events where page=’NextSong’  group by userid) x
+order by rank desc ;
+
+select count(song),location,artist  from events group by location,artist grouping sets((location,artist),location,());
+
+Select lead(song)over(partition by userid order by ts),lag(song)over(partition by userid order by ts) from events;
+
+SELECT userid,song,ts from events  Distribute By userid sort by userid,song,ts;
+
+SELECT userid,song from events order by userid,song,ts CLUSTER BY userid;
